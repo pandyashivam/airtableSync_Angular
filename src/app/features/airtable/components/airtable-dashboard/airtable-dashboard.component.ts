@@ -152,6 +152,10 @@ export class AirtableDashboardComponent implements OnInit {
 
   onTabChange(event: any): void {
     this.selectedTableIndex = event;
+    // Reset pagination when changing tabs
+    this.pageIndex = 0;
+    this.pageSize = 100;
+    
     if (this.tables.length > 0) {
       this.loadTableData(this.tables[this.selectedTableIndex].name);
     }
