@@ -1,0 +1,32 @@
+<div class="connect-container">
+  <mat-card class="connect-card">
+    <div class="logo-container">
+      <img  src="https://cdn.brandfetch.io/iddsnRzkxS/theme/dark/idksKOtgp1.svg?c=1bxid64Mup7aczewSAYMX&t=1675163445204"  alt="Airtable Logo" class="airtable-logo">
+    </div>
+    
+    <h1 class="connect-title">Connect to Airtable</h1>
+    
+    <div class="connect-content">
+      <div *ngIf="!isLoading">
+        <p class="connect-description">
+          Connect your Airtable account to sync and manage your data.
+        </p>
+        
+        <div class="button-container">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="connectToAirtable()">
+            <mat-icon>link</mat-icon>
+            Connect to Airtable
+          </button>
+        </div>
+      </div>
+      
+      <div class="loading-container" *ngIf="isLoading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>{{ loadingMessage }}</p>
+      </div>
+    </div>
+  </mat-card>
+</div>
