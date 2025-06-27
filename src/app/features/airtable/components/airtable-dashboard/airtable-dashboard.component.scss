@@ -107,4 +107,14 @@
   .mat-tab-body-wrapper {
     flex: 1;
   }
+  
+  .revision-history-link {
+    color: #3f51b5;
+    text-decoration: none;
+    font-weight: 500;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

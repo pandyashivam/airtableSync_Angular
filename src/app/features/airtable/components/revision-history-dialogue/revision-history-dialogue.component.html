@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>
+  <span>Revision History</span>
+  <span *ngIf="data.recordName"> - {{ data.recordName }}</span>
+</h2>
+
+<mat-dialog-content>
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading revision history...</p>
+  </div>
+
+  <div class="error-container" *ngIf="error && !isLoading">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div class="no-data-container" *ngIf="!isLoading && !error && (!revisionHistory || revisionHistory.revisionData.length === 0)">
+    <mat-icon>history</mat-icon>
+    <p>No revision history found for this record.</p>
+  </div>
+
+  <div class="revision-history-container" *ngIf="!isLoading && !error && revisionHistory && revisionHistory.revisionData.length > 0">
+    <div class="table-info">
+      <p><strong>Table:</strong> {{ revisionHistory.tableName }}</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let revision of revisionHistory.revisionData; let i = index">
+        <div class="timeline-marker">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line" *ngIf="i < revisionHistory.revisionData.length - 1"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="revision-header">
+            <span class="column-type">{{ revision.columnType }}</span>
+            <span class="revision-date">{{ formatDate(revision.createdDate) }}</span>
+          </div>
+          
+          <div class="revision-body">
+            <div class="old-value" *ngIf="revision.oldValue">
+              <div class="value-label">Previous value:</div>
+              <div class="value-content">{{ revision.oldValue }}</div>
+            </div>
+            <div class="new-value" *ngIf="revision.newValue">
+              <div class="value-label">New value:</div>
+              <div class="value-content">{{ revision.newValue }}</div>
+            </div>
+            <div class="empty-value" *ngIf="!revision.oldValue && !revision.newValue">
+              <div class="value-content">No changes in value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onClose()">Close</button>
+</mat-dialog-actions>

@@ -39,12 +39,8 @@ export class AirtableConnectComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('AirtableConnectComponent initialized');
     
-    // Check if already authenticated
     if(this.authService.getToken()) {
-      console.log('User is authenticated, redirecting to dashboard');
-      // Force a full navigation to dashboard
       window.location.href = '/airtable/dashboard';
       return;
     }
@@ -55,7 +51,6 @@ export class AirtableConnectComponent implements OnInit {
       const error = params['error'];
       
       if (code && state) {
-        console.log('OAuth callback detected, handling authentication');
         this.handleOAuthCallback(code, state, error);
       }
     });
@@ -74,7 +69,6 @@ export class AirtableConnectComponent implements OnInit {
       next: (response) => {
         if (response && response.status === 'success') {
           this.snackbar.showSuccess('Successfully connected to Airtable');
-          console.log('Authentication successful, proceeding to sync data');
           this.syncAirtableData();
         } else {
           this.handleError('Failed to connect to Airtable: ' + (response?.message || 'Unknown error'));
@@ -89,15 +83,11 @@ export class AirtableConnectComponent implements OnInit {
 
   private syncAirtableData(): void {
     this.loadingMessage = 'Syncing data from Airtable...';
-    console.log('Starting data sync from Airtable');
     
     this.airtableService.syncAllData().subscribe({
       next: (res) => {
-        console.log('Data sync completed successfully');
         this.isLoading = false;
         
-        // Use window.location for a full page navigation/reload
-        console.log('Navigating to dashboard');
         setTimeout(() => {
           window.location.href = '/airtable/dashboard';
         }, 100);

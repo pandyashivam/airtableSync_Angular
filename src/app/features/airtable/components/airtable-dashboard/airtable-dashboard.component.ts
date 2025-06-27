@@ -19,6 +19,8 @@ import { ColDef, GridApi, GridReadyEvent, GridOptions } from 'ag-grid-community'
 import { catchError, finalize, of, tap } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { RevisionHistoryLoginComponent } from '../revision-history-login/revision-history-login.component';
+import { RevisionHistoryDialogueComponent } from '../revision-history-dialogue/revision-history-dialogue.component';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-airtable-dashboard',
@@ -40,14 +42,13 @@ import { RevisionHistoryLoginComponent } from '../revision-history-login/revisio
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './airtable-dashboard.component.html',
-  styleUrls: ['./airtable-dashboard.component.scss']
+  styleUrls: ['./airtable-dashboard.component.scss'],
+  providers: [DatePipe]
 })
 export class AirtableDashboardComponent implements OnInit {
-  // Loading state
   isLoading = false;
   isSyncingRevisionHistory = false;
   
-  // Data
   bases: Base[] = [];
   selectedBase: any = null;
   tables: any[] = [];
@@ -58,7 +59,6 @@ export class AirtableDashboardComponent implements OnInit {
   pageIndex: number = 0;
   totalRecords: number = 0;
 
-  // AG Grid configuration
   gridApi: GridApi | null = null;
   columnDefs: ColDef[] = [];
   defaultColDef: ColDef = {
@@ -73,7 +73,8 @@ export class AirtableDashboardComponent implements OnInit {
     private authService: AuthService,
     private snackbar: SnackBarService,
     private location: Location,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -139,6 +140,7 @@ export class AirtableDashboardComponent implements OnInit {
           this.totalRecords = response.pagination.total;
           this.pageSize = response.pagination.limit;
           this.pageIndex = response.pagination.page - 1;
+          
           this.setupGrid();
         }
         else
@@ -158,14 +160,62 @@ export class AirtableDashboardComponent implements OnInit {
   }
 
   setupGrid(): void {
-    this.columnDefs = this.fields.map(field => {
-      return {
+    this.columnDefs = [{
+      headerName: 'Revision History',
+      field: 'hasRevisionHistory',
+      sortable: true,
+      filter: true,
+      width: 150,
+      cellRenderer: (params: any) => {
+        if (params.value === true || params.data.id) {
+          return `<a href="javascript:void(0)" class="revision-history-link">View History</a>`;
+        }
+        return '';
+      },
+      onCellClicked: (params: any) => {
+        if (params.value === true || params.data.id) {
+          this.showRevisionHistory(params.data);
+        }
+      }
+    }];
+    
+    const fieldColumns = this.fields.map(field => {
+      const colDef: ColDef = {
         headerName: field.name,
         field: field.id,
         sortable: true,
         filter: true,
         hide: field.type === 'object' || typeof this.records[0]?.[field.id] === 'object'
       };
+      
+      if (field.type === 'date' || field.type === 'dateTime') {
+        colDef.valueFormatter = (params) => {
+          if (params.value) {
+            return this.datePipe.transform(params.value, 'dd/MM/yyyy') || params.value;
+          }
+          return '';
+        };
+      }
+      
+      return colDef;
+    });
+    
+    this.columnDefs = [...this.columnDefs, ...fieldColumns];
+  }
+
+  showRevisionHistory(record: any): void {
+    if (!record._airtableId) {
+      this.snackbar.showError('Record ID is missing');
+      return;
+    }
+    
+    this.dialog.open(RevisionHistoryDialogueComponent, {
+      width: '700px',
+      maxHeight: '90vh',
+      data: {
+        recordId: record._airtableId,
+        recordName: record['Ticket ID'] + ' - ' + record['Title'] || record['Name']
+      }
     });
   }
 
@@ -184,7 +234,6 @@ export class AirtableDashboardComponent implements OnInit {
       if (result) {
         this.isSyncingRevisionHistory = true;
         
-        // Call the API with the credentials
         this.airtableService.revisionHistorySync(
           result.email, 
           result.password, 
@@ -197,7 +246,6 @@ export class AirtableDashboardComponent implements OnInit {
           next: (response) => {
             if (response.status === 'success') {
               this.snackbar.showSuccess('Revision history synchronized successfully');
-              console.log('Sync result:', response.data);
             } else {
               this.snackbar.showError('Failed to sync revision history');
             }
@@ -216,7 +264,7 @@ export class AirtableDashboardComponent implements OnInit {
   }
 
   onPageChange(event: PageEvent): void {
-    const page = event.pageIndex + 1; // MatPaginator is 0-based, our API is 1-based
+    const page = event.pageIndex + 1;
     const pageSize = event.pageSize;
     
     if (this.tables.length > 0) {

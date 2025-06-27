@@ -81,4 +81,8 @@ export class AirtableService {
       mfaCode
     });
   }
+  
+  getRevisionHistory(recordId: string) {
+    return this.http.get<ApiResponse<any>>(`/airtable/revision-history/${recordId}`);
+  }
 } 

@@ -45,7 +45,6 @@ export class RevisionHistoryLoginComponent {
       this.errorMessage = null;
       this.dialogRef.close(this.loginForm.value);
     } else {
-      // Mark all fields as touched to trigger validation messages
       this.loginForm.markAllAsTouched();
     }
   }

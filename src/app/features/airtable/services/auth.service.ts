@@ -29,27 +29,19 @@ export class AuthService {
     private http: HttpService,
     private router: Router
   ) {
-    // Delay the token check to avoid circular dependency issues during initialization
     setTimeout(() => {
       this.checkTokenOnStartup();
     }, 0);
   }
 
   private checkTokenOnStartup(): void {
-    console.log('Checking token on startup');
     if (this.hasToken()) {
-      console.log('Token found, validating with server');
       this.getCurrentUser().pipe(
         catchError(error => {
           console.error('Token validation error:', error);
-          // Don't log out immediately on connection errors (status 0 or network errors)
           if (error.status === 401) {
-            // Only logout for actual authentication errors
-            console.log('Authentication error (401), logging out');
             this.logout();
           } else {
-            // For connection errors, keep the token but mark as not authenticated for now
-            console.log('Connection error, keeping token but marking as not authenticated temporarily');
             this.isAuthenticatedSubject.next(false);
           }
           return of(null);
@@ -57,28 +49,21 @@ export class AuthService {
       ).subscribe({
         next: (response) => {
           if (response) {
-            console.log('Token is valid, checking current path');
-            // User is authenticated, redirect to dashboard if on connect page
             if (window.location.pathname === '/airtable/connect') {
-              console.log('On connect page, navigating to dashboard');
               this.navigateToDashboard();
             }
           }
         }
       });
     } else {
-      console.log('No token found, checking current path');
-      // No token, redirect to connect page if not already there
       if (window.location.pathname !== '/airtable/connect' && 
           !window.location.pathname.includes('/connect')) {
-        console.log('Not on connect page, navigating to connect');
         window.location.href = '/airtable/connect';
       }
     }
   }
 
   private navigateToDashboard(): void {
-    console.log('AuthService: Navigating to dashboard');
     window.location.href = '/airtable/dashboard';
   }
 
@@ -124,7 +109,6 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('Logging out user');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     this.isAuthenticatedSubject.next(false);
