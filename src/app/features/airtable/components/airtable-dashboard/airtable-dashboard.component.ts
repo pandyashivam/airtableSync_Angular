@@ -63,9 +63,7 @@ export class AirtableDashboardComponent implements OnInit {
   columnDefs: ColDef[] = [];
   defaultColDef: ColDef = {
     minWidth: 100,
-    maxWidth: 600,
-    filter: false,
-    sortable: false,
+    maxWidth: 600
   };
 
   constructor(
@@ -163,8 +161,6 @@ export class AirtableDashboardComponent implements OnInit {
     this.columnDefs = [{
       headerName: 'Revision History',
       field: 'hasRevisionHistory',
-      sortable: true,
-      filter: true,
       width: 150,
       cellRenderer: (params: any) => {
         if (params.value === true || params.data.id) {
@@ -183,8 +179,6 @@ export class AirtableDashboardComponent implements OnInit {
       const colDef: ColDef = {
         headerName: field.name,
         field: field.id,
-        sortable: true,
-        filter: true,
         hide: field.type === 'object' || typeof this.records[0]?.[field.id] === 'object'
       };
       
