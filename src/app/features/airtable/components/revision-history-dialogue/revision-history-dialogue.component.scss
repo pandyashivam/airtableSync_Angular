@@ -2,6 +2,11 @@
   display: block;
 }
 
+.mdc-dialog--open .mat-mdc-dialog-surface, .mdc-dialog--closing .mat-mdc-dialog-surface {
+  transform: none;
+  overflow: hidden;
+}
+
 h2 {
   margin-top: 0;
   margin-bottom: 16px;
